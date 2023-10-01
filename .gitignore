@@ -1,1 +1,6 @@
 /target
+rust-todo-list/target
+certs
+www
+!www/.gitkeep
+rust-todo-list/t.txt

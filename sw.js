@@ -184,14 +184,34 @@ self.addEventListener("fetch", (event) => {
   event.respondWith((async () => {
     try {
       const app = await WasmApp;
-
-      const request = JSON.stringify({
-        method: event.request.method,
-        url: event.request.url,
-        headers: Array.from(event.request.headers),
-        body: await event.request.text(),
-      });
-
+      var request =""
+     
+      console.log("w",event.request.url)
+      if (event.request.url.includes("/golem")) {
+        var b = await fetch(event.request);
+        console.log("b",b)
+        if (b.status == 200) {
+          var bb = await b.json()
+            if (Array.isArray(bb)) {
+              if (bb.length > 0) {
+                request = JSON.stringify({
+                  method: event.request.method,
+                  url: event.request.url,
+                  headers: Array.from(event.request.headers),
+                  body: bb[0],
+                });
+              }
+            }
+          
+        }
+        
+      } else {
+          request = JSON.stringify({
+          method: event.request.method,
+          url: event.request.url,
+          headers: Array.from(event.request.headers),
+          body: await event.request.text(),
+        });      }
       if (DEBUG) console.log("fetch request sent to wasm:", request);
 
       const bytes = utf8enc.encode(request);

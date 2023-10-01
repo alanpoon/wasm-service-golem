@@ -3,7 +3,7 @@ use matchit::{Params, Router};
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 use std::sync::{Mutex, MutexGuard};
-
+mod golem;
 // Routing: https://docs.rs/matchit/latest/matchit/
 // html! macro: https://docs.rs/html-to-string-macro/latest/html_to_string_macro/macro.html.html
 
@@ -99,6 +99,7 @@ mod about {
         router.insert("/", |_, r| page(TITLE, about(r.path())))?;
         router.insert("/;nav", |_, r| nav(TITLE, about(r.path())))?;
         router.insert("/;clicked", |_, r| about_clicked(r.path()))?;
+        router.insert("/golem/getHtml", |a, r| r.body.clone())?;
         Ok(())
     }
 
@@ -468,7 +469,7 @@ static ROUTER: Lazy<Result<Router<Handler>, matchit::InsertError>> = Lazy::new(|
     let mut router: Router<Handler> = Router::new();
 
     about::register(&mut router)?;
-    todos::register(&mut router)?;
+    golem::todos::register(&mut router)?;
 
     Ok(router)
 });

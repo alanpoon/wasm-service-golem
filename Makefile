@@ -1,4 +1,6 @@
 run:
 	cargo build --release --target wasm32-unknown-unknown
-	cp target/wasm32-unknown-unknown/release/wasm_service.wasm ./app.wasm
-	python3 -m http.server 8060
+	cp index.html www
+	cp favicon.ico www
+	cp sw.js www
+	cp target/wasm32-unknown-unknown/release/wasm_service.wasm www/app.wasm

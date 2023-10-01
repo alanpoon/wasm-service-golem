@@ -1,56 +1,62 @@
-# wasm-service
+# wasm-service golemcloud
 
-This is a simple proof of concept that shows how you could use HTMX and Rust for frontend development. The basic idea in HTMX is that a webserver is being called on interactions with DOM elements, and returning back snippets of HTML that will replace certain DOM elements. Instead of http requests going to a regular web server, this project shows how service workers can intercept calls to a server and return back responses driven from WebAssembly instead.
+This example is a golemcloud SSR proof of concept that builds on top of HTMX and Rust for frontend development.
 
-See the demo here: https://richardanaya.github.io/wasm-service/
+The original example is to use Webassembly (rust) to render HTML strings using service worker. Service worker can intercept the HTMX Ajax example hx-get="/todos", pipes request into the Webassembly's exported functions. The original example, the todolist is stored inside the user browser. Clearing browser cache deletes the todolist. 
 
-# Developing `wasm-service`
+Using SSR, will allow us to store the todolist inside the golemcloud, achieving shared state.
 
-## Install & build
+## Golemcloud with HTMX
 
-Install the WASM target via `rustup` in order to compile to wasm binaries:
+Golemcloud's response is always a JSON with an Array. Htmx requires response to return as HTML string. In order to fix this, service worker can be used again to modify the response from golem cloud. The following code fixes:
+
+```js
+if (event.request.url.includes("/golem")) {
+        var b = await fetch(event.request);
+        if (b.status == 200) {
+          var bb = await b.json()
+            if (Array.isArray(bb)) {
+              if (bb.length > 0) {
+                request = JSON.stringify({
+                  method: event.request.method,
+                  url: event.request.url,
+                  headers: Array.from(event.request.headers),
+                  body: bb[0],
+                });
+              }
+            }
+          
+        }
+      } else {
+          request = JSON.stringify({
+          method: event.request.method,
+          url: event.request.url,
+          headers: Array.from(event.request.headers),
+          body: await event.request.text(),
+        });     
+ }
+
+```
+If the htmx's request path contains "/golem", we fetches the response, if the response status is 200 and the body is an array, we take the first element if it exists.
+
+## HTML from Golem
+![screenshot](/GolemMe.png)
+Clicking the button "Golem me", it will get the HTML from golem cloud, "Hello" in bold.
+
+## Guide to running this project 
+- Generate your self-signed certificate using localhost as common name. Perhaps using mkcerts. 
+- Put the certs inside "certs" in this format: "server-cert.pem", "server-key.pem"
+- Add self-signed generate certs to system or browser
 
 ```sh
-rustup target add wasm32-unknown-unknown
+make
+cd .devcontainer
+docker compose up -d nginx
 ```
+- go to https://localhost:4003
+- click the button "Golem me"
 
-Compile the lib crate into `wasm_service.wasm`:
-
-```sh
-cargo build --target wasm32-unknown-unknown --release
-```
-
-Copy the `.wasm` file to `app.wasm` in current dir:
-
-```sh
-cp target/wasm32-unknown-unknown/release/wasm_service.wasm app.wasm
-```
-
-## Serve repo root dir on localhost http
-
-Use any method to serve the files from the root dir (in particular `index.js`, `sw.js`, and `app.wasm`). Note you need to serve on localhost or via https for service workers to be enabled. Here's how you can do it with [`caddy`](https://caddyserver.com/) in bash:
-
-```
-caddy run --adapter caddyfile --config - <<< $'http://127.0.0.1:8000 \n log \n root / . \n file_server browse'
-```
-
-## Rebuild and run automatically with `cargo watch`
-
-Install:
-
-```sh
-cargo install cargo-watch
-```
-
-Build and copy on change:
-
-```sh
-cargo watch -i app.wasm -x 'build --target wasm32-unknown-unknown --release' -s 'cp target/wasm32-unknown-unknown/release/wasm_service.wasm app.wasm'
-```
-
-## Resources for developing with service workers
-
-* [Service Worker API @ MDN](https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API)
-* [Workers overview @ web.dev](https://web.dev/workers-overview/)
-* `about:debugging` in firefox
-* Open serviceworker console `about:devtools-toolbox?id=<service-worker-id>&type=worker`
+## Future exploration
+- Currently there is bug in golem's cloud Gateway API for Request body as parameter
+- Expore hx-post with json encoded parameters
+- Expore using service worker to convert Post form into Post JSON.
