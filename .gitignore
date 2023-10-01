@@ -1,6 +1,7 @@
 /target
 rust-todo-list/target
 certs
-www
+www/**
 !www/.gitkeep
+!www/netlify.toml
 rust-todo-list/t.txt

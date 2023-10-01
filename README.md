@@ -4,7 +4,7 @@ This example is a golemcloud SSR proof of concept that builds on top of HTMX and
 
 The original example is to use Webassembly (rust) to render HTML strings using service worker. Service worker can intercept the HTMX Ajax example hx-get="/todos", pipes request into the Webassembly's exported functions. The original example, the todolist is stored inside the user browser. Clearing browser cache deletes the todolist. 
 
-Using SSR, will allow us to store the todolist inside the golemcloud, achieving shared state.
+SSR will allow us to store the todolist inside the golemcloud, achieving shared state.
 
 ## Golemcloud with HTMX
 
@@ -46,7 +46,7 @@ Clicking the button "Golem me", it will get the HTML from golem cloud, "Hello" i
 ## Guide to running this project 
 - Generate your self-signed certificate using localhost as common name. Perhaps using mkcerts. 
 - Put the certs inside "certs" in this format: "server-cert.pem", "server-key.pem"
-- Add self-signed generate certs to system or browser
+- Add self-signed certs to system or browser
 
 ```sh
 make
@@ -58,5 +58,14 @@ docker compose up -d nginx
 
 ## Future exploration
 - Currently there is bug in golem's cloud Gateway API for Request body as parameter
-- Expore hx-post with json encoded parameters
-- Expore using service worker to convert Post form into Post JSON.
+- Explore hx-post with json encoded parameters
+- Explore using service worker to convert Post form into Post JSON.
+- Explore use of html-templating engine like Maud / Askama, whichever that can be used in wasm32-wasi inside golem worker
+
+## Cool things about this project
+- Can use same language for full stack
+- Use of golem cloud's durability feature, may not need to use Database
+- HTMX recent hype
+
+## Live demo
+https://golem-htmx.netlify.app
